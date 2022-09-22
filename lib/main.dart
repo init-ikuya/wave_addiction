@@ -1,5 +1,9 @@
 import "dart:io";
 import 'package:flutter/material.dart';
+import 'package:wave_addiction/detail_page.dart';
+
+import 'general/general.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -21,52 +25,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-List searchImage(String path) {
-  print("===== searchImage =====");
-  print(path);
-  List<FileSystemEntity> files = Directory(path).listSync();
-  print(files);
-  String imagePath = "";
-  bool flag = false;
-  for (FileSystemEntity f in files) {
-    print(f.path);
-    if (f.path.contains(".png") || f.path.contains(".jpg") || f.path.contains(".jpeg")) {
-      imagePath = f.path;
-      flag = true;
-      print(imagePath);
-    }
-  }
-  return [flag, imagePath];
-}
-
-Widget musicCard(String path) {
-  print("===== musicCard =====");
-  List l = searchImage(path);
-  bool imageFlag = l[0];
-  String imagePath = l[1];
-  Widget child;
-  if (imageFlag) {
-    child = Container(
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(
-          image: Image.file(File(imagePath)).image,
-          fit: BoxFit.fill,
-        )
-      ),
-    );
-  } else {
-    child = Center(child: Text(path));
-  }
-  return Card(
-    color: Colors.yellowAccent,
-    child: child,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-  );
-}
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -82,12 +40,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void init() {
     dirs = Directory("/storage/emulated/0/Music").listSync();
     dirs.removeWhere((element) => element.path.contains(".thumbnails"));
-    print(dirs);
+    dirs.sort((a,b) => a.path.compareTo(b.path));
   }
 
   @override
   Widget build(BuildContext context) {
-    print("===== build =====");
     init();
     return Scaffold(
       appBar: AppBar(
@@ -108,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       backgroundColor: Colors.grey[900],
       body: Container(
-        margin: EdgeInsets.all(4),
+        margin: const EdgeInsets.all(4),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -119,6 +76,40 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         )
       )
+    );
+  }
+
+  Widget musicCard(String path) {
+    List l = searchImage(path);
+    bool imageFlag = l[0];
+    String imagePath = l[1];
+    Widget child;
+    if (imageFlag) {
+      child = Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            image: DecorationImage(
+              image: Image.file(File(imagePath)).image,
+              fit: BoxFit.fill,
+            )
+        ),
+      );
+    } else {
+      child = Center(child: Text(path));
+    }
+    return GestureDetector(
+      onTap:() {
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) => DetailPage(path: path)
+        ));
+      },
+      child: Card(
+        color: Colors.yellowAccent,
+        child: child,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     );
   }
 }
