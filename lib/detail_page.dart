@@ -1,9 +1,9 @@
 import "dart:io";
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-// import 'package:audioplayers/audioplayers.dart';
 
-import 'general/general.dart';
+import 'package:wave_addiction/audio/hundle.dart';
+import 'package:wave_addiction/general/general.dart';
 
 
 class DetailPage extends StatefulWidget {
@@ -21,13 +21,23 @@ class _StateDetailPage extends State<DetailPage> {
   late bool imageFlag;
   late String imagePath;
   late AudioPlayer _player;
-
+  List<bool> isPlayings = [];
+  List<FileSystemEntity> files = [];
+  List<FileSystemEntity> musics = [];
 
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
     path = widget.path;
+    files = Directory(path).listSync();
+    files.sort((a,b) => a.path.compareTo(b.path));
+    for (var f in files) {
+      if (f.path.endsWith("mp3")) {
+        musics.add(f);
+        isPlayings.add(false);
+      }
+    }
+    _player = AudioPlayer();
     List l = searchImage(path);
     imageFlag = l[0];
     imagePath = l[1];
@@ -38,14 +48,6 @@ class _StateDetailPage extends State<DetailPage> {
       return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            // boxShadow: [
-            //   const BoxShadow(
-            //     color: Colors.grey,
-            //     spreadRadius: 4,
-            //     blurRadius: 4,
-            //     offset: Offset(1, 1),
-            //   ),
-            // ],
             image: DecorationImage(
               image: Image.file(File(imagePath)).image,
               fit: BoxFit.fill,
@@ -60,13 +62,37 @@ class _StateDetailPage extends State<DetailPage> {
     }
   }
 
+  Widget playStopButton(int index, String path) {
+    Widget button;
+    if (!isPlayings[index]) {
+      button = IconButton(
+        icon: const Icon(
+          Icons.play_arrow,
+          color: Colors.grey,
+        ),
+        onPressed: () async {
+          playAudio(_player, path, isPlayings, index, setState);
+        },
+      );
+    } else {
+      button = IconButton(
+        icon: const Icon(
+          Icons.pause_circle_outline,
+          color: Colors.grey,
+        ),
+        onPressed: () async {
+          stopAudio(_player, isPlayings, index, setState);
+        },
+      );
+    }
+    return button;
+  }
+
   Widget musicArea() {
     List<Widget> widgetList = [];
-    List<FileSystemEntity> files = Directory(path).listSync();
-    files.sort((a,b) => a.path.compareTo(b.path));
-    for (FileSystemEntity f in files) {
-      if (f.path.endsWith("mp3")) {
-        bool isPlaying = false;
+    for (var i=0; i<musics.length; i++) {
+      if (musics[i].path.endsWith("mp3")) {
+        isPlayings = isPlayings.sublist(0, files.length-1);
         widgetList.add(
           Card(
             color: Colors.transparent,
@@ -85,15 +111,7 @@ class _StateDetailPage extends State<DetailPage> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  IconButton(
-                    icon: const Icon(
-                      Icons.play_arrow,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-
-                    },
-                  ),
+                  playStopButton(i, musics[i].path),
                   IconButton(
                     icon: const Icon(
                       Icons.more_vert,
@@ -105,20 +123,17 @@ class _StateDetailPage extends State<DetailPage> {
                   ),
                 ]
               ),
-              title: Text(f.path.split("/")[path.split("/").length],
+              title: Text(musics[i].path.split("/")[path.split("/").length],
                 style: const TextStyle(color: Colors.greenAccent),
               ),
                 subtitle: const Text("subtitle",
                   style: TextStyle(color: Colors.grey),
                 ),
               onTap: () async {
-                if (!isPlaying) {
-                  await _player.setFilePath(f.path);
-                  await _player.play();
-                  isPlaying = true;
+                if (!isPlayings[i]) {
+                  playAudio(_player, path, isPlayings, i, setState);
                 } else {
-                  _player.stop();
-                  isPlaying = false;
+                  stopAudio(_player, isPlayings, i, setState);
                 }
               }
             ),

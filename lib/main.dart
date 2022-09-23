@@ -1,8 +1,8 @@
 import "dart:io";
 import 'package:flutter/material.dart';
-import 'package:wave_addiction/detail_page.dart';
 
-import 'general/general.dart';
+import 'package:wave_addiction/detail_page.dart';
+import 'package:wave_addiction/general/general.dart';
 
 
 void main() {
@@ -54,13 +54,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
       drawer: Drawer(
         backgroundColor: Colors.lightGreenAccent,
-        child: ListView.builder(
-          itemCount: 3,
-          itemBuilder: (BuildContext context, int index) {
-            return ListTile(title: Text("Item $index"),
-            );
-          }
-        )
+        child: ListView(
+          children: const <Widget>[
+            ListTile(title: Text("Music")),
+            ListTile(title: Text("Item")),
+            ListTile(title: Text("Config")),
+          ]
+        ),
       ),
 
       backgroundColor: Colors.grey[900],
