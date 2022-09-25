@@ -1,9 +1,9 @@
 import "dart:io";
 import 'package:flutter/material.dart';
 
+import 'package:wave_addiction/config.dart';
 import 'package:wave_addiction/detail_page.dart';
 import 'package:wave_addiction/general/general.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -37,7 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String where = "/storage/emulated/0/Music";
   List<FileSystemEntity> dirs = [];
 
-  void init() {
+  @override
+  void initState() {
     dirs = Directory("/storage/emulated/0/Music").listSync();
     dirs.removeWhere((element) => element.path.contains(".thumbnails"));
     dirs.sort((a,b) => a.path.compareTo(b.path));
@@ -45,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    init();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -55,10 +55,21 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: Drawer(
         backgroundColor: Colors.lightGreenAccent,
         child: ListView(
-          children: const <Widget>[
-            ListTile(title: Text("Music")),
-            ListTile(title: Text("Item")),
-            ListTile(title: Text("Config")),
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.library_music),
+              title: const Text("Music"),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Config"),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => const ConfigPage()
+                ));
+              },
+            ),
           ]
         ),
       ),
@@ -87,20 +98,20 @@ class _MyHomePageState extends State<MyHomePage> {
     if (imageFlag) {
       child = Container(
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            image: DecorationImage(
-              image: Image.file(File(imagePath)).image,
-              fit: BoxFit.fill,
-            )
+          borderRadius: BorderRadius.circular(12),
+          image: DecorationImage(
+            image: Image.file(File(imagePath)).image,
+            fit: BoxFit.fill,
+          )
         ),
       );
     } else {
       child = Center(child: Text(path));
     }
     return GestureDetector(
-      onTap:() {
+      onTap: () {
         Navigator.push(context, MaterialPageRoute(
-            builder: (context) => DetailPage(path: path)
+          builder: (context) => DetailPage(path: path)
         ));
       },
       child: Card(
